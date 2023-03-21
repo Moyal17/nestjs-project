@@ -1,17 +1,21 @@
-import { Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import {User} from "@prisma/client";
+import { AuthDto } from './dto';
+import { User } from '@prisma/client';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post('signin')
-  signin() {
-    return 'I am signing In';
-  }
   @Post('signup')
-  signup(): string {
-    return 'I am signing UP';
+  // Question: what's the differance between a class AuthDto in dto file to an Auth Interface?
+  signup(
+    @Body() authBody: AuthDto,
+  ): Promise<{ id: number; email: string; createdAt: Date } | undefined> {
+    return this.authService.signUp(authBody);
+  }
+  @Post('signin')
+  signin(@Body() authBody: AuthDto): Promise<User | undefined> {
+    return this.authService.signIn(authBody);
   }
 }

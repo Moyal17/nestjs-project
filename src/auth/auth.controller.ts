@@ -9,13 +9,14 @@ export class AuthController {
 
   @Post('signup')
   // Question: what's the differance between a class AuthDto in dto file to an Auth Interface?
-  signup(
-    @Body() authBody: AuthDto,
-  ): Promise<{ id: number; email: string; createdAt: Date } | undefined> {
+  signup(@Body() authBody: AuthDto): Promise<Partial<User> | undefined> {
     return this.authService.signUp(authBody);
   }
   @Post('signin')
-  signin(@Body() authBody: AuthDto): Promise<User | undefined> {
-    return this.authService.signIn(authBody);
+  async signin(
+    @Body() authBody: AuthDto,
+  ): Promise<{ accessToken: string } | undefined> {
+    const accessToken = await this.authService.signIn(authBody);
+    return { accessToken };
   }
 }

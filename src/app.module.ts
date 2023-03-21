@@ -6,6 +6,8 @@ import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { ItemsModule } from './items/items.module';
 import { AuthModule } from './auth/auth.module';
+import { UsersController } from './users/users.controller';
+import { UsersModule } from './users/users.module';
 import config from './config/config';
 @Module({
   imports: [
@@ -14,8 +16,9 @@ import config from './config/config';
     ItemsModule,
     AuthModule,
     PrismaModule,
+    UsersModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController, UsersController],
   providers: [AppService],
 })
 export class AppModule {}

@@ -23,13 +23,17 @@ export class AuthService {
         data: userBody,
         select: { id: true, email: true, createdAt: true },
       });
-      console.log('User ', user);
       return user;
     } catch (err) {
-      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002')
+      if (
+        err instanceof Prisma.PrismaClientKnownRequestError &&
+        err.code === 'P2002'
+      ) {
         // an error of Prisma for unique props
+        // eslint-disable-next-line prettier/prettier
+        console.log('There is a unique constraint violation, a new user cannot be created with this email');
         throw new ForbiddenException('Credentials taken');
-      else throw err; // an error from nestJs
+      } else throw err; // an error from nestJs
     }
   }
   async signIn(authBody: AuthDto): Promise<string> {

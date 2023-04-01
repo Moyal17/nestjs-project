@@ -1,9 +1,11 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Test } from '@nestjs/testing';
 import { AppModule } from '../src/app.module';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { PrismaService } from '../src/prisma/prisma.service';
 import * as pactum from 'pactum';
 import { AuthDto } from '../src/auth/dto';
+import { CreateProductDto } from '../src/products/dto';
 
 describe('App e2e', () => {
   let app: INestApplication;
@@ -79,7 +81,6 @@ describe('App e2e', () => {
         .get(`/users/me`)
         .expectStatus(200);
     });
-
     const userBody = {
       firstName: 'Dor',
       lastName: 'Moyal',
@@ -92,7 +93,9 @@ describe('App e2e', () => {
         })
         .withBody(userBody)
         .patch(`/users/`)
-        .expectStatus(200);
+        .expectStatus(200)
+        .expectBodyContains(userBody.firstName)
+        .expectBodyContains(userBody.lastName);
     });
     it('Get User By Id', (): any => {
       return pactum
@@ -100,16 +103,61 @@ describe('App e2e', () => {
         .withHeaders({
           Authorization: 'Bearer $S{userAuth}',
         })
-        .get(`/users/`)
-        .expectStatus(200);
+        .get(`/users/1`)
+        .expectStatus(200)
+        .expectBodyContains(userBody.firstName)
+        .expectBodyContains(userBody.lastName);
     });
   });
-  describe('Bookmarks', () => {
-    describe('Create Bookmark', () => {});
-    describe('Get Bookmark by Id', () => {});
-    describe('Create Bookmark', () => {});
-    describe('Get All Bookmarks', () => {});
-    describe('Edit Bookmark', () => {});
-    describe('Delete Bookmark', () => {});
+  describe('Products Flow', () => {
+    const product: CreateProductDto = {
+      name: 'Chocolate With Filling',
+      description:
+        'Main types of chocolate Chocolate is a food made from the fruit of the cocoa tree. Chocolate is the basic ingredient in many kinds of candy, chocolate candies, ice cream, cookies, cakes, etc. Chocolate flavor is one of the most popular flavors. most favorite in the world. Chocolate is also...',
+      image: 'https://chocolate-store.s3.eu-central-1.amazonaws.com/1.1.jpg',
+      price: 25,
+      sale: 20,
+    };
+    describe('Creation Product Flow', () => {
+      it('Successfully Create Product', (): any => {
+        return pactum
+          .spec()
+          .withHeaders({ Authorization: 'Bearer $S{userAuth}' })
+          .post(`/products/`)
+          .withBody(product)
+          .expectStatus(201);
+      });
+      it('Throw error for no product name', (): any => {
+        const { name, ...productWithoutName } = product;
+        return pactum
+          .spec()
+          .withHeaders({ Authorization: 'Bearer $S{userAuth}' })
+          .post(`/products/`)
+          .withBody(productWithoutName)
+          .expectStatus(401);
+      });
+      it('Throw error for no product price', (): any => {
+        const { price, ...productWithoutPrice } = product;
+        return pactum
+          .spec()
+          .withHeaders({ Authorization: 'Bearer $S{userAuth}' })
+          .post(`/products/`)
+          .withBody(productWithoutPrice)
+          .expectStatus(401);
+      });
+    });
+    it('Get Product By Id', (): any => {
+      return pactum
+        .spec()
+        .get(`/products/1`)
+        .expectStatus(200)
+        .expectBodyContains(product.name)
+        .expectBodyContains(product.price);
+    });
+    it('Get All Products', (): any => {
+      return pactum.spec().get(`/products`).expectStatus(200);
+    });
+    describe('Edit Product', () => {});
+    describe('Delete Product', () => {});
   });
 });
